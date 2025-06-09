@@ -3,32 +3,25 @@ import streamlit as st
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
-# Konfigurasi koneksi ke Google Sheets
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-credentials = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
-client = gspread.authorize(credentials)
+# Ganti link CSV di bawah dengan link sheet kamu dalam format CSV
+csv_url = "https://docs.google.com/spreadsheets/d/1xV6db4tNF6RxAn8KaO9qqFtcd0IigBfqOeA9JJjSdhA/export?format=csv"
 
-# URL Google Sheet kamu
-sheet_url = "https://docs.google.com/spreadsheets/d/1xV6db4tNF6RxAn8KaO9qqFtcd0IigBfqOeA9JJjSdhA/edit#gid=0"
-sheet = client.open_by_url(sheet_url).sheet1
-data = sheet.get_all_records()
-df = pd.DataFrame(data)
+# Load data dari Google Sheets (public CSV)
+df = pd.read_csv(csv_url)
 
 # Load model AI
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 @st.cache(allow_output_mutation=True)
 def get_embeddings():
-    return model.encode(df["Trigger (Pertanyaan Member)"].tolist())
+    return model.encode(df["Trigger (Pertanyaan Member)"].astype(str).tolist())
 
 embeddings = get_embeddings()
 
 # UI
-st.title("🤖 4key-ai - Auto CS Assistant")
-st.write("Tempel pertanyaan dari member, sistem akan cari balasan paling cocok.")
+st.title("🤖 4key-ai - Auto CS Assistant (Lite Version)")
+st.write("Tempel pertanyaan dari member, sistem akan cari balasan paling cocok dari Google Sheet kamu.")
 
 user_input = st.text_area("Pertanyaan Member:")
 
